@@ -1,0 +1,11 @@
+#!/bin/bash
+
+
+DEST="/tmp/image-clipboard"
+
+mkdir -p "$DEST"
+
+file="$DEST/$(date +%Y-%m-%d_%T).png"
+
+xclip -selection clipboard -t image/png -o > "$file" && nsxiv "$file"
+

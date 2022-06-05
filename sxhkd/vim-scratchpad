@@ -1,0 +1,31 @@
+#!/bin/bash
+
+DIR="/tmp/scratchpad-notes"
+mkdir -p "$DIR"
+temp="$DIR/scratchpad-$RANDOM.txt"
+
+
+alacritty --class scratchpad,scratchpad -e vim -u "$HOME/.minimal-scratchpad-vimrc" "$temp"
+
+# xclip -t text/plain -o > /tmp/xclip-save
+
+# Simple cat ... | xclip ...  for some reason adds trailing \n
+# echo -n "$(cat "$temp")" | fmt -w2000 | xsel -i
+
+# https://askubuntu.com/questions/7769/keyboard-shortcut-for-pasting-the-primary-selection
+# sh -c 'xsel | xvkbd -xsendevent -file - 2>/dev/null'
+
+# https://unix.stackexchange.com/questions/399403/xdotools-type-mangles-carriage-returns
+
+if ! [ -f "$temp" ]; then
+    exit 0
+fi
+
+cat "$temp" | {
+  IFS= read -r LINE;
+  xdotool type --window "$(xdotool getwindowfocus)" --delay 0 "$LINE";
+  while IFS= read -r LINE; do
+    xdotool key  --window "$(xdotool getwindowfocus)" --delay 0 Shift_L+Return;
+    xdotool type --window "$(xdotool getwindowfocus)" --delay 0 "$LINE";
+  done;
+}

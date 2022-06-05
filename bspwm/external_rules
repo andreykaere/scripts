@@ -1,0 +1,72 @@
+#!/bin/bash
+
+wid=$1
+class=$2
+instance=$3
+consequences=$4
+title=$(xdotool getwindowname $wid)
+
+
+# export PATH="$PATH:/usr/local/bin"
+
+eval "$consequences"
+
+
+
+# https://www.reddit.com/r/bspwm/comments/g9ynnu/fulscreen_with_tiling_windows/
+if [ "$state" = "floating" ]; then
+    echo 'layer=above'
+    # echo 'border=off'
+fi
+
+if [ "$class" = "Dragon" ]; then
+    echo 'layer=above'
+    echo 'follow=on'
+    echo 'focus=on'
+    # echo 'border=off'
+fi
+
+if [[ "$class" == *"LibreOffice"* ]] ||
+   [[ "$class" == "Soffice" ]] ||
+   [[ "$class" == *"libreoffice"* ]]; then
+    echo "state=tiled"
+fi
+
+
+# for media viewer
+if [ "$class" = "TelegramDesktop" ] && [ "$title" = "Media viewer" ]; then
+    echo 'layer=above'
+fi
+
+
+# case $class in
+#  [Tt]elegram*)
+#    echo "follow = on"
+#    echo "focus = on"
+#    echo "state = floating"
+#    echo "rectangle = 1136x674+418+212"
+#    ;;
+# esac
+
+
+# For alacritty 
+if [ "$instance" = "popup-bottom-center" ]; then
+    echo "state=floating"
+    echo "rectangle = 724x144+321+624"
+fi
+
+if [ "$instance" = "scratchpad" ]; then
+    echo "state=floating"
+    echo 'layer=above'
+    echo "rectangle = 724x188+321+580"
+fi
+
+
+# It works with urxvt, but for some reason doesn't work with alacritty
+# if [ "$instance" = "popup-bottom-center" ]; then
+#     echo "state=floating"
+#     read W H <<< $(xdotool getdisplaygeometry)
+#     eval "$(xdotool getwindowgeometry --shell $wid )"
+#     xdotool windowmove $wid $(($W / 2 - $WIDTH / 2)) $(($H - $HEIGHT))
+# fi
+

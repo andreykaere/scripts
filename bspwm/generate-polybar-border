@@ -1,0 +1,21 @@
+#!/bin/bash
+
+
+
+borders_id=($(xdo id -n "polybar-border"))
+
+for border in "${borders_id[@]}";
+do
+    #echo $border;
+    xdotool windowkill $border &> /dev/null;
+done
+
+
+# https://stackoverflow.com/questions/57078155/draw-border-frame-using-xlib
+/home/andrey/.config/bspwm/scripts/x11polybar_border &
+sleep 1
+
+border_id=$(xdo id -n "polybar-border")
+
+#echo $border_id
+xdo lower $border_id;

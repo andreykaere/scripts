@@ -1,0 +1,20 @@
+#!/bin/bash
+
+
+DEST="/tmp/screenshot-to-text"
+
+mkdir -p "$DEST"
+
+export LD_LIBRARY_PATH="$HOME/local/lib"
+
+image="/tmp/screenshot-to-text/sloppy.$RANDOM.png"
+text="/tmp/screenshot-to-text/translation"
+
+maim -m 1 -s > "$image" 
+
+
+tesseract $image $text 2>/dev/null 1>/dev/null
+
+cat "$text.txt" | xclip -selection c
+
+

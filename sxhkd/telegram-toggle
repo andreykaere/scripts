@@ -1,0 +1,77 @@
+#!/bin/bash
+
+#id=$(xdotool search --limit 1 --classname "audacious") 
+#ids=($(xdo id -a 'Telegram (1)'))
+#ids=($(wmctrl -l | awk '/Telegram/ {print $1}'))
+#ids=($(wmctrl -l | awk '/Telegram$/ {print $1}'))
+
+get_id() {
+    local ids=($(wmctrl -l | awk '/Telegram( \([0-9]+\))?$/ {print $1}'))
+    local id="${ids[0]}"
+    echo "$id"
+}
+
+update_state() {
+    echo "$1" > "/tmp/telegram-laststate"
+}
+
+update_desk() {
+    echo "$(bspc query -D -d focused)" > "/tmp/telegram-lastdesk"
+}
+
+unoccupy() {
+    random_desk="$(bspc query -D -d any.occupied.\!focused)"
+    bspc node "$1" -d "$random_desk"
+}
+
+show_node() {
+    bspc node "$1" -g hidden=off  --to-desktop focused --focus
+    update_state "on"
+}
+
+hide_node() {
+    bspc node "$1" -g hidden=on 
+    update_state "off"
+}
+
+
+id="$(get_id)"
+
+if [ -z "${id}" ]; then
+    Telegram &
+    sleep .5
+    
+    id="$(get_id)"
+    bspc node "$id" -t floating;
+    bspc node "$id" -l above; 
+
+
+    xdotool windowsize $id 585 614; 
+    xdotool windowmove $id 781 35;
+
+    update_desk 
+    update_state "on"
+
+    exit 0;
+fi
+
+
+lastdesk="$(cat "/tmp/telegram-lastdesk")"
+laststate="$(cat "/tmp/telegram-laststate")"
+currdesk="$(bspc query -D -d focused)"
+
+
+if [ "$lastdesk" = "$currdesk" ]; then
+    if [ "$laststate" = "off" ]; then
+        show_node "$id"
+    else
+        hide_node "$id"
+        unoccupy "$id"
+    fi
+else
+    show_node "$id"
+    update_desk
+fi
+
+
+

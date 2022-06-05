@@ -1,0 +1,153 @@
+#!/bin/bash
+
+# This script creates borders around the windows, when there are more, then
+# one window on the current desktop
+
+IGNORE_APPS=( "TelegramDesktop" "Audacious" "Spotify" "Silvia" )
+ALWAYS_BORDER=( "Alacritty" "Gnome-terminal" "Zathura" "Nsxiv" )
+
+bspc subscribe node_add | while read -r Event Monitor Desktop Ip Node
+do
+    Class="$(bspc query -T -n "$Node" | jq -r '.client.className')"
+
+    WM_CLASS="$(xprop -id "$Node" WM_CLASS | awk '{print $4}' | tr -d '"')"
+    
+    for i in "${ALWAYS_BORDER[@]}"
+    do
+        if [ "$i" = "$Class" ]; then
+            bspc config -n $Node border_width 2
+            break;
+        fi
+    done
+done &
+
+# always_create_border () {
+#     local nodes=("$@")
+
+#     if [ "${#nodes[@]}" -lt "2" ]; then
+#         node="${nodes[0]}"
+#         class="$(xprop -id "$node" WM_CLASS | awk '{print $4}' | tr -d '"')"
+
+#         for i in "${ALWAYS_BORDER[@]}"
+#         do
+#             if [ "$class" = "$i" ]; then
+#                 bspc config -n "$node" border_width 2
+#                 return 0;
+#             fi
+#         done
+#     fi
+# }
+
+# is_ignore_app () {
+#     local node="$1"
+
+#     local state="$(bspc query -T -n "$node" | jq -r '.client.state')"
+
+#     if [ "$state" = "floating" ]; then
+#         echo "1"
+#         return 0;
+#     fi
+    
+
+#     class="$(xprop -id "$node" WM_CLASS | awk '{print $4}' | tr -d '"')"
+
+#     for app in "${IGNORE_APPS[@]}"
+#     do
+#         if [ "$class" = "$app" ]; then
+#             echo "1"
+#             return 0;
+#         fi
+#     done
+    
+#     echo "0"
+#     return 0;
+# }
+
+# create_border () {
+#     local nodes=("$@")
+
+#     if [ "${#nodes[@]}" -lt "2" ]; then
+#         return 0;
+#     fi
+
+#     for node in "${nodes[@]}"
+#     do
+#         if [ "$(is_ignore_app "$node")" = "0" ]; then
+#             bspc config -n "$node" border_width 2
+#         fi
+#     done
+# }
+
+
+# remove_border () {
+#     local nodes=("$@")
+
+#     if [ "${#nodes[@]}" -gt "1" ]; then
+#         return 0;
+#     fi
+    
+#     node="${nodes[0]}"
+
+#     class="$(xprop -id "$node" WM_CLASS | awk '{print $4}' | tr -d '"')"
+
+#     for i in "${ALWAYS_BORDER[@]}"
+#     do
+#         if [ "$i" = "$class" ]; then
+#             return 0;
+#         fi
+#     done
+
+#     bspc config -n "$node" border_width 0
+
+# }
+
+
+# process_adding () {
+#     nodes=( $(bspc query -N -n .window.\!hidden -d "$1") )
+    
+#     remove_border "${nodes[@]}"
+#     always_create_border "${nodes[@]}"
+#     create_border "${nodes[@]}"
+# }
+
+
+# process_removing () {
+#     nodes=( $(bspc query -N -n .window.\!hidden -d "$1") )
+    
+#     remove_border "${nodes[@]}"
+# }
+
+
+# bspc subscribe node_add | while read -r Event Monitor Desktop Ip Node
+# do
+#     Node="$(bspc query -N -n focused)"
+
+#     if [ "$(is_ignore_app "$Node")" = "1" ]; then
+#         continue;
+#     fi
+    
+#     process_adding "$Desktop"
+
+# done &
+
+
+# bspc subscribe node_transfer | while read -r Event SrcMonitor SrcDesktop SrcNode DestMonitor DestDesktop DestNode
+# do
+#     Node="$(bspc query -N -n focused)"
+
+#     if [ "$(is_ignore_app "$Node")" = "1" ]; then
+#         continue;
+#     fi
+    
+#     process_adding "$DestDesktop"
+#     process_removing "$SrcDesktop"
+
+# done &
+
+
+# bspc subscribe node_remove | while read -r Event Monitor Desktop Node
+# do
+#     process_removing "$Desktop"
+
+# done &
+

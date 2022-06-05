@@ -1,0 +1,16 @@
+#!/bin/bash
+
+DEST="/tmp/screenshots/"
+
+mkdir -p "$DEST"
+
+# libs for slop
+export LD_LIBRARY_PATH="$HOME/local/lib"
+
+file="$(date +'%d-%m-%Y-%T').png"
+
+maim --hidecursor -m 1 -s | tee "$DEST/$file" \
+    | xclip -selection clipboard -t image/png
+
+# play sound of making a screenshot
+# paplay /usr/share/sounds/freedesktop/stereo/screen-capture.oga

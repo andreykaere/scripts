@@ -1,0 +1,8 @@
+#!/bin/bash
+
+src="$1"
+dst="$2"
+
+bspc node "@$src:/" -s "@$dst:/" --follow "$dst" ||
+bspc node "@$src:/" -d "$dst"    --follow "$dst" ||
+bspc node "@$dst:/" -d "$src"    --follow "$src"

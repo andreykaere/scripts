@@ -1,0 +1,13 @@
+#!/bin/bash
+
+STATUS=$(awk -F"[][]" '/dB/ { print $6 }' <(amixer sget Master));
+
+pactl set-sink-mute 0 toggle
+
+
+#if [[ "$STATUS" == "on " ]]; then
+#    pactl set-sink-mute 0 toggle
+#else
+#    pactl set-sink-mute 0 toggle
+#fi
+

@@ -1,0 +1,221 @@
+#!/bin/bash
+# Clean fullscreen aims to provide a means to have a clean desktop when using
+# transparency in bspwm, the issue I found was that when a window entered,
+# fullscreen mode I was still able to see the windows behind it, I think this
+# looks kind of gross so that's why this exists.
+
+
+rm /tmp/fullscreen_hidden*
+# rm /tmp/fullscreen_lastfocus*
+
+
+# for some reason that did't work 
+# so it has moved to functions itself, so it will work every time
+# border_id=$(xdo id -n "polybar-border")
+
+HideBar() {
+  border_id=$(xdo id -n "polybar-border")
+  # polybar_icon_id=$(xdo id -n "polybar-xwindow-icon")
+  polybar-msg cmd hide &> /dev/null
+  xdo hide "$border_id"
+  # xdo hide "$polybar_icon_id"
+
+#echo $border_id
+}
+
+ShowBar() {
+  border_id=$(xdo id -n "polybar-border")
+  # polybar_icon_id=$(xdo id -n "polybar-xwindow-icon")
+  polybar-msg cmd show &> /dev/null
+  xdo show "$border_id"
+  # xdo show "$polybar_icon_id"
+  # xdo show "${polybar_icon_id[0]}"
+}
+
+
+
+HideNodes() {
+  #nodes_to_hide=("$@")
+  #for node in "${nodes_to_hide[@]}"; do
+  for node in $1
+  do
+    #echo "$node"
+    bspc node "$node" -g hidden=on
+    echo "$node" >> "/tmp/fullscreen_hidden-$2"
+  done
+}
+
+HideTiled() {
+  tiled=($(bspc query -N -n .tiled -d "$1"))
+  tiled_hidden=($(bspc query -N -n .tiled.hidden -d "$1"))
+  #echo "${tiled[@]}"
+  for del in "${tiled_hidden[@]}" 
+  do
+    tiled=("${tiled[@]/$del}") #Quotes when working with strings
+  done
+  #echo "${tiled_hidden[@]}"
+
+  #echo "${tiled[@]}"
+
+  HideNodes "${tiled[*]}"
+}
+
+
+HideAllWindows() {
+    #HideFloating "$1"
+    # HideTiled "$1"
+
+
+    to_hide=($(bspc query -N -n .window.\!fullscreen.\!hidden -d "$1" ))
+
+    HideNodes "${to_hide[*]}" "$1"
+
+}
+
+
+
+ShowNodes() {
+  if ! [ -f "/tmp/fullscreen_hidden-$1" ]; then
+    touch "/tmp/fullscreen_hidden-$1"
+  fi
+
+
+  Nodes=$(cat "/tmp/fullscreen_hidden-$1")
+
+
+  for node in $Nodes;
+  do
+    bspc node "$node" -g hidden=off 
+    sed -i "/^${node}/d" "/tmp/fullscreen_hidden-$1";
+  done
+ 
+ # if [ -f  "/tmp/fullscreen_lastfocus-$1" ]; then 
+ #      lastnode="$(cat "/tmp/fullscreen_lastfocus-$1")"
+ #      xdotool windowfocus "$lastnode"
+ #      sed -i "/^${lastnode}/d" "/tmp/fullscreen_lastfocus-$1";
+ #  fi
+
+
+
+}
+
+
+# For telegram's Media viwer, but not worth it
+# bspc subscribe node_focus | while read -r Event Monitor Desktop Node
+# do
+#     Node="$(xdotool getwindowfocus)"
+
+#     if [ -n "$(bspc query -N -n "$Node".fullscreen)" ]; then
+#         HideBar
+
+#         HideAllWindows "$Desktop"
+#     fi
+# done &
+
+
+check_for_window () {
+    local Node="$1" 
+    local Class="$(xdotool getwindowclassname "$Node")"
+
+    # apply it only for the terminal
+    if [ "$Class" = "Gnome-terminal" ] || [ "$Class" = "Alacritty" ] || \
+       [ "$Class" = "Spotify" ]; then 
+        echo "1"
+        return 0;
+    fi
+
+    echo "0"
+}
+
+bspc subscribe node_state | while read -r Event Monitor Desktop Node State Active
+do
+    
+    if [ "$(check_for_window "$Node")" = "0" ]; then
+        continue;
+    fi
+
+    Class="$(xdotool getwindowclassname "$Node")"
+
+    fullscreen_nodes="$(bspc query -N -n .fullscreen.\!hidden -d "$Desktop")"
+    # Hide bar and nodes when node becomes fullscreen, otherwise show
+    if [ "$State" = "fullscreen" ] && [ "$Active" = "on" ]; then
+        # Only consider nodes on primary monitor
+        HideBar
+        HideAllWindows "$Desktop"
+
+    elif [ -z "$fullscreen_nodes" ]; then 
+        ShowBar
+        ShowNodes "$Desktop"
+    fi
+
+done &
+
+bspc subscribe node_remove | while read Event Monitor Desktop Node
+do
+    fullscreen_nodes="$(bspc query -N -n .fullscreen.\!hidden -d "$Desktop")"
+    
+    if [ -z "$fullscreen_nodes" ]; then
+        ShowBar
+        ShowNodes "$Desktop"
+    fi
+
+done &
+
+
+
+
+bspc subscribe node_transfer | while read -r Event SrcMonitor SrcDesktop SrcNode DestMonitor DestDesktop DestNode
+do
+    if [ "$(check_for_window "$Node")" = "0" ]; then
+        continue;
+    fi
+
+    # Some bug, when toggle hidden/unhidden
+    if [ "$SrcDesktop" = "$DestDesktop" ] || \
+       [ -z "$(bspc query -N -n "$SrcNode".fullscreen)" ]; then
+        continue;
+    fi
+
+    # Show nodes on src desktop and hide nodes on dest desktop
+    # If src node is in full screen mode
+    ShowNodes "$SrcDesktop"
+    HideAllWindows "$DestDesktop"
+    # ShowBar
+
+    # Hide any fullscreen nodes on destination desktop
+    FullscreenDest="$(bspc query -N -n .fullscreen -d "$DestDesktop" \
+        | sed "/$SrcNode/d")"
+
+    if [ -n "$FullscreenDest" ]; then
+        HideNodes "$FullscreenDest" "$DestDesktop"
+    fi
+done &
+
+
+
+bspc subscribe desktop_focus | while read -r Event Monitor Desktop
+do
+    # fullscreennodes=($(bspc query -N -n .fullscreen.\!hidden -d "$Desktop"))
+    fullscreennodes=($(bspc query -N -n .fullscreen.\!hidden -d focused ))
+    # Class="$(bspc query -T -n "$Node" | jq -r '.client.className')"
+
+
+    # Hide bar if desktop contains fullscreen node
+    if [ -n "$fullscreennodes" ]; then 
+        # echo "$fullscreennodes"
+
+        for node in "${fullscreennodes[@]}"
+        do
+            class="$(xdotool getwindowclassname "$node")"
+
+            if [ "$class" = "Gnome-terminal" ] || \
+               [ "$class" = "Alacritty" ] || \
+               [ "$class" = "Spotify" ]; then
+                HideBar
+            fi
+        done
+    # Otherwise show the bar
+    else
+        ShowBar
+    fi
+done 

@@ -1,0 +1,23 @@
+#!/bin/bash
+
+
+get_id() {
+    ID=$(xdotool search --limit 1 --classname "audacious")
+}
+
+get_id
+
+if [[ $ID == "" ]]; then
+    audacious &
+    get_id
+    xdotool windowmove $ID 1091 652
+
+elif [[ $(xdotool getwindowfocus) == $ID ]]; then
+    bspc wm -h off 
+    bspc node -f prev.local.!hidden.window
+    bspc wm -h on
+else
+    bspc node $ID -f
+fi
+
+

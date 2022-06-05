@@ -1,0 +1,8 @@
+#!/bin/bash
+
+
+ffmpeg -f x11grab -video_size 1360x768 -framerate 30 -i :0.0 \
+-f alsa -i pulse -preset ultrafast -crf 18 -pix_fmt yuv420p \
+"${HOME}/Videos/$(date +'%d-%m-%Y-%T').mp4"
+
+

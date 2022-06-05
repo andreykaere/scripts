@@ -1,0 +1,11 @@
+#!/bin/bash
+
+STATUS=$(awk -F"[][]" '/dB/ { print $6 }' <(amixer sget Master));
+
+if [[ $STATUS == 'off' ]]; then
+    #./mute_toggle.sh
+    /home/andrey/.config/sxhkd/scripts/mute_toggle.sh
+fi
+
+amixer -D pulse sset Master 5%+ &> /dev/null
+

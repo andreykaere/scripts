@@ -1,0 +1,36 @@
+#!/bin/bash
+#ids=($(bspc query -N -n .hidden | rofi -dmenu))
+
+
+windows=($(bspc query -N -n .window.hidden -d focused))
+index="$(for i in "${!windows[@]}"
+        do
+        grep -q "^${windows[i]}$" /tmp/system-hidden;
+        if [ $? -ne 0 ]; then
+            name="$(xprop -id ${windows[i]} WM_NAME | cut -d\" -f2)"
+            class="$(xprop -id ${windows[i]} WM_CLASS | cut -d\" -f2)"
+            
+            # https://stackoverflow.com/questions/1538676/uppercasing-first-letter-of-words-using-sed
+            echo -en "$i $(echo "$class" | sed -e "s/\b\(.\)/\u\1/g")   $name\0icon\x1f$class\n"
+        fi
+
+        done | rofi -p "Show window" -dmenu)" 
+
+
+#echo "$index"
+#echo "${index%% *}"
+re='^[0-9]+$'
+
+
+
+if [[ "${index%% *}" =~ $re ]]; then  #if esc key was pressed or nothing selected
+    #xdo show "${windows[${index%% *}]}"
+    bspc node "${windows[${index%% *}]}" -g hidden=off -f
+    #bspc node "${windows[${index%% *}]}" -f
+fi
+
+#bspc node "$node" -g hidden=off
+#bspc node "$node" -n focused
+#bspc node "$node" -f
+
+#xprop -id "$id" WM_NAME | cut -d\" -f2

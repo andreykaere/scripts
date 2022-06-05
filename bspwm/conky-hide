@@ -1,0 +1,74 @@
+#!/bin/bash
+
+is_desktop_empty () {
+    local desk="$1"
+    local nodes="$(bspc query -N -n .window.\!hidden  -d "$desk")"
+
+
+    if [ -n "$nodes" ]; then
+        echo '0'
+    else
+        echo '1'
+    fi
+}
+
+hide () {
+    id="$(xdotool search --classname "conky")"
+    xdo hide "$id"
+}
+
+show () {
+    id="$(xdotool search --classname "conky")"
+    xdo show "$id"
+}
+
+bspc subscribe node_focus | while read -r Event Monitor Desktop Node
+do
+    Class="$(xdotool getwindowclassname "$Node")"
+    State="$(bspc query -T -n "$Node" | jq -r '.client.state')"
+
+
+    if [ "$Class" != "Spotify" ] && [ "$State" != "floating" ]; then
+        hide
+    fi
+done &
+
+
+bspc subscribe node_remove | while read -r Event Monitor Desktop Node
+do
+    is_empty="$(is_desktop_empty "$Desktop")"
+
+    if [ "$is_empty" = "1" ]; then
+        show
+    fi
+done &
+
+
+bspc subscribe desktop_focus | while read -r Event Monitor Desktop 
+do
+    is_empty="$(is_desktop_empty "$Desktop")"
+
+    if [ "$is_empty" = "1" ]; then
+        show
+    fi
+done &
+
+bspc subscribe node_transfer | while read -r Event 
+do
+    is_empty="$(is_desktop_empty "$(bspc query -D -d focused)")"
+
+    if [ "$is_empty" = "1" ]; then
+        show
+    fi
+done 
+
+# bspc subscribe node_flag | while read -r Event Monitor Desktop Node Flag Active
+# do
+#     if [ "$Flag" = "hidden" ] && \
+#        [ "$Desktop" = "$(bspc query -D -d .focused)" ] && \
+#        [ "$(is_desktop_empty "$Desktop")" = "1" ]; then
+#         show
+#     fi
+# done 
+
+

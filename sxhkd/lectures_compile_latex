@@ -1,0 +1,8 @@
+#!/bin/bash
+
+# source .profile
+# source .bashrc
+export PATH
+
+/home/andrey/Desktop/MSU/university-setup/scripts/rofi-lectures-view.py
+

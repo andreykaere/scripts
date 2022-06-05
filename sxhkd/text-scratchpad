@@ -1,0 +1,5 @@
+#!/bin/bash
+
+tmp_file=$(mktemp)
+urxvt -name "__text_scratchpad" -e bash -lc "sleep 0.1 && vim -u /home/andrey/.minimal-tex-vimrc -c startinsert -c 'setlocal spell' ${tmp_file}" && xclip -selection clipboard < $tmp_file
+#-c startinsert -c 'setlocal spell' 

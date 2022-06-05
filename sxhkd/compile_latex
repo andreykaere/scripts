@@ -1,0 +1,10 @@
+#!/bin/bash
+
+#source .profile
+#source .bashrc
+export PATH
+#echo $PATH
+
+cd ~/Desktop/MSU/current_course; latexmk -pvc *.tex
+
+

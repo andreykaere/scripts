@@ -1,0 +1,18 @@
+#!/bin/bash
+
+export LD_LIBRARY_PATH="$HOME/local/lib:$LD_LIBRARY_PATH"
+
+
+mkdir -p /tmp/slop-recordings
+
+slop=$(slop -f "%x %y %w %h %g %i") || exit 1
+read -r X Y W H G ID < <(echo $slop)
+ 
+ffmpeg -f x11grab -s "$W"x"$H"  -framerate 30 -i :0.0+$X,$Y \
+    -f alsa -i pulse -preset ultrafast -crf 18 -pix_fmt yuv420p \
+    -vf "pad=ceil(iw/2)*2:ceil(ih/2)*2" "/tmp/slop-recordings/$RANDOM.mp4"
+
+ # ffmpeg -f x11grab -s "$W"x"$H" -i :0.0+$X,$Y -f alsa -i pulse "/tmp/slop-recordings/$RANDOM.mp4"
+ # ffmpeg -f x11grab -s "$W"x"$H" -i :0.0+$X,$Y -f alsa -ac 2 -i hw:0 -acodec libmp3lame -vcodec libx264 "/tmp/slop-recordings/$RANDOM.mp4"
+
+ # ffmpeg -f x11grab -video_size 1360x768 -framerate 30 -i :0.0 -f alsa -i pulse -preset ultrafast -crf 18 -pix_fmt yuv420p out.mp4

@@ -1,0 +1,109 @@
+#!/bin/bash
+
+
+get_spotify_id() {
+    local id=$(xdotool search --limit 1 --classname "spotify") 
+
+    # Converting xdotool's format to bspc's, so we can compare it later
+    echo "$(bspc query -N -n "$id".window)"
+}
+
+get_telegram_id() {
+    local ids=($(wmctrl -l | awk '/Telegram( \([0-9]+\))?$/ {print $1}'))
+    local id="${ids[0]}"
+    echo "$id"
+}
+
+
+get_audacious_id() {
+    local ids=($(wmctrl -l | awk '/Audacious( \([0-9]+\))?$/ {print $1}'))
+    local id="${ids[0]}"
+    echo "$id"
+}
+
+unoccupy() {
+    # random_desk="$(bspc query -D -d any.occupied.\!focused)"
+    # bspc node "$1" -d "$random_desk"
+
+    for i in $(bspc query -D);
+    do
+        nodes="$(bspc query -N -n .window.\!hidden -d "$i")"
+
+        if [ -n "$nodes" ]; then
+            bspc node "$1" -d "$i"
+            return 0;
+        fi
+    done
+}
+
+is_desktop_empty() {
+    local desk="$1"
+    local nodes="$(bspc query -N -n .window.\!hidden  -d "$desk")"
+
+
+    if [ -n "$nodes" ]; then 
+        echo '0'
+    else
+        echo '1'
+    fi
+}
+
+bspc subscribe node_transfer | while read -r Event SrcMonitor SrcDesktop SrcNode DstMonitor DstDesktop DstNode
+do
+    
+    # If desktop is not empty, don't do anything, since there are
+    # still some nodes there and it's not necessary to move something
+    # out of this desktop
+
+    if [ "$(is_desktop_empty "$SrcDesktop")" = "0" ]; then
+        continue;
+    fi
+
+    tel_id="$(get_telegram_id)"
+    spot_id="$(get_spotify_id)"
+    aud_id="$(get_audacious_id)"
+
+    nodes=($(bspc query -N -n .window.hidden -d "$SrcDesktop"))
+
+    for node in "${nodes[@]}"
+    do
+        case "$(echo "$node" | awk '{print tolower($0)}')" in 
+            "$(echo "$tel_id" | awk '{print tolower($0)}')")
+               unoccupy "$tel_id" ;;
+            "$(echo "$spot_id" | awk '{print tolower($0)}')")
+               unoccupy "$spot_id" ;;
+            "$(echo "$aud_id" | awk '{print tolower($0)}')")
+               unoccupy "$aud_id" ;;
+        esac
+    done
+done &
+
+
+bspc subscribe node_remove | while read -r Event Monitor Desktop Node
+do
+    # If desktop is not empty, don't do anything, since there are
+    # still some nodes there and it's not necessary to move something
+    # out of this desktop
+
+    if [ "$(is_desktop_empty "$Desktop")" = "0" ]; then
+        continue;
+    fi
+
+    tel_id="$(get_telegram_id)"
+    spot_id="$(get_spotify_id)"
+    aud_id="$(get_audacious_id)"
+
+    nodes=($(bspc query -N -n .window.hidden -d "$Desktop"))
+
+    for node in "${nodes[@]}"
+    do
+        case "$(echo "$node" | awk '{print tolower($0)}')" in 
+            "$(echo "$tel_id" | awk '{print tolower($0)}')")
+               unoccupy "$tel_id" ;;
+            "$(echo "$spot_id" | awk '{print tolower($0)}')")
+               unoccupy "$spot_id" ;;
+            "$(echo "$aud_id" | awk '{print tolower($0)}')")
+               unoccupy "$aud_id" ;;
+        esac
+    done
+done 
