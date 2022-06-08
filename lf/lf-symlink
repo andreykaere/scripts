@@ -1,0 +1,13 @@
+#!/bin/bash
+
+# echo $BASH
+# echo $0
+# ps -p $$
+
+dest="$(echo "$2" | sed "s/\~/${HOME//\//\\/}/")"
+
+# dest="$(echo "$2" | sed "s/\~/$HOME")"
+
+ln -s "$1" "$dest" && printf "Successfully created a symlink $1 -> $dest"
+
+

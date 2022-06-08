@@ -1,0 +1,220 @@
+.TH NAIVECALENDAR 1 "January 6, 2021"
+
+.SH NAME
+naivecalendar 
+- rofi calendar popup
+
+.SH SYNOPSIS
+.B naivecalendar [-h] [-V] [-v] [-p] [-x] [-f 
+.I FORMAT
+.B ] [-e 
+.I EDITOR
+.B ] [-l 
+.I LOCALE
+.B ] [-c] [-t 
+.I THEME
+.B ] [-d
+.I DATE
+.B ]
+
+.SH DESCRIPTION
+.B naivecalendar
+is made using rofi and python3 stdlib.
+it can be used as an interactive calendar or a simple popup to pickup date
+
+.RS
+.nf
+ - Use mouse or keyboard to interact with the calendar.
+ - Hit bottom arrows to cycle through months.
+ - Hit a day to create a linked event.
+(A day with attached event will appear yellow.)
+ - Create multiple event type and with between them
+
+There's somme shortcut too, type it in rofi prompt :
+
+     help : display this help
+ nn or -- : go to previous year
+   n or - : go to previous month
+   p or + : go to next month
+ pp or ++ : go to next year
+    event : display events of the month (first line)
+   switch : switch events folder to display
+    theme : show theme selector
+     menu : display a selection menu (skip shortcuts)
+
+.SH OPTIONS
+
+.TP
+.B -h|--help 
+show this help message and exit
+
+.TP
+.B -V|--version 
+show program's version number and exit
+
+.TP
+.B -v|--verbose 
+redirect rofi command errors to stdout
+
+.TP
+.B -p|--print
+print date to stdout instead of opening a note
+
+.TP
+.B -x|--clipboard
+copy date to clipboard
+
+.TP
+.BI -f|--format " "FORMAT
+option '-p' or '-x' output format (datetime.strftime format, defaut='%Y-%m-%d')
+
+.TP
+.BI -e|--editor " "EDITOR
+editor command to open notes
+
+.TP
+.BI -l|--locale " "LOCALE
+force system locale, for example '-l es_ES.utf8'
+
+.TP
+.B -c|--read-cache      
+force calendar to read old date from cache
+
+.TP
+.BI -t|--theme " "THEME
+set calendar theme, default=classic_dark (theme file name without extention)
+
+.TP
+.BI -d|--date " "DATE  
+display calendar at the given month, format='%m-%Y'
+
+
+
+.SH FILES
+.SS System commands and scripts files
+
+.TP
+.I /usr/bin/naivecalendar
+.RS
+system command                     
+
+.RE
+.I /usr/share/naivecalendar/naivecalendar.sh
+.RS
+rofi command                       
+
+.RE
+.I /usr/share/naivecalendar/naivecalendar.py
+.RS
+script called by rofi              
+
+.RE
+.I /usr/share/naivecalendar/tools/naivecalendar-update-themes
+.RS
+theme config editor system command        
+
+.RE
+.I /usr/share/naivecalendar/tools/naivecalendar-add-event
+.RS
+theme event editor system command         
+
+.RE
+.SS Configuration Files
+
+.TP
+.I /usr/share/naivecalendar/themes/*.rasi
+.RS
+rofi configuration theme files                   
+
+.RE
+.I /usr/share/naivecalendar/themes/common/
+.RS
+common ressources for themes (rofi configuration files)
+
+.RE
+.I /usr/share/naivecalendar/themes/*.cfg
+.RS
+ini file for calendar content configuration     
+
+.RE
+.I /usr/share/naivecalendar/global/events.cfg   
+.RS
+ini file to configure events                        
+
+.RE
+.I /usr/share/naivecalendar/global/custom_actions.cfg
+.RS
+ini file to configure custom buttons and actions                     
+
+.RE
+.I /usr/share/naivecalendar/scripts/"    
+.RS
+default folder to store custom actions scripts
+
+.RE
+
+.SS User configurations files
+
+.TP
+.I ~/.config/naivecalendar/themes/*.rasi
+.RS
+user theme files                   
+
+.RE
+.I ~/.config/naivecalendar/themes/*.cfg
+.RS
+user content configuration         
+
+.RE
+.I ~/.config/naivecalendar/themes/common/
+.RS
+common ressources for user themes
+
+.RE
+.I ~/.config/naivecalendar/global/custom_actions.cfg
+.RS
+user custom actions                
+
+.RE
+.I ~/.config/naivecalendar/global/events.cfg   
+.RS
+user events configuration
+
+.RE
+.I ~/.config/naivecalendar/scripts/"    
+.RS
+user scripts                       
+
+.RE
+
+.SS Generated and cache files
+
+.TP
+.I ~/.naivecalendar_events/<event type>/<date format>.txt
+.RS
+day notes path (default)           
+
+.RE
+.I ~/.cache/naivecalendar/date_cache.ini
+.RS
+remember date throught loops       
+
+.RE
+.I ~/.cache/naivecalendar/pretty_print_cache.txt
+.RS
+pass date to bash when -p option   
+
+.RE
+.I ~/.cache/naivecalendar/theme_cache.txt
+.RS
+remember theme after quitting      
+
+.RE
+.I ~/.cache/naivecalendar/event_cache.txt
+.RS
+remember event type                
+
+.RE
+.I ~/.cache/naivecalendar/rofi_log.txt
+.RS
+last rofi command log file         

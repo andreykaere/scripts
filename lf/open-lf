@@ -1,0 +1,21 @@
+#!/bin/bash
+
+get_pid() {
+	xprop _NET_WM_PID -id "$1" | awk '/[0-9]+/ {print $3}'
+}
+
+swallowingid=$(bspc query -N -n focused)
+
+
+xdg-open "$1" 1> /dev/null 2> /dev/null &
+
+bspc node "$swallowingid" --flag hidden=on
+sleep .3
+
+swallowerid=$(bspc query -N -n focused)
+
+echo "$swallowerid $swallowingid" >> /tmp/swallowids
+echo "$swallowerid $swallowingid" >> /tmp/swallowlf
+
+
+

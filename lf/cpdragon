@@ -1,0 +1,13 @@
+#!/bin/bash
+files=$(dragon -t -x -a)
+
+function urldecode() { : "${*//+/ }"; echo -e "${_//%/\\x}"; }
+
+for file in $files
+do
+  raw_path="${file#file://}"
+  path="$(urldecode "$(echo $raw_path | sed "s/%20/ /g")")"
+  name="$(urldecode "$(basename "$path")")"
+
+  cp "$path" "$(pwd)/$name"
+done

@@ -1,0 +1,61 @@
+#!/bin/sh
+# Simple script to output battery level formatted for polybar
+
+#cat /sys/class/power_supply/BAT0/capacity
+
+bat_number=1
+BAT="/sys/class/power_supply/BAT${bat_number}"
+acpi=$(acpi -b 2>/dev/null| grep "Battery $bat_number")
+#ac_adapt=$(acpi -a | awk '{print $2}')
+ac_adapt=""
+mode=$(cat "$BAT/status")
+percent=$(cat "$BAT/capacity")
+#remaining=$(echo "$acpi" | awk '{print $5}')
+ramaining=""
+symbol=""
+
+
+if [ "$mode" = "Discharging" ]; then
+  symbol='⚡ '
+elif [ "$mode" = "Charging" ]; then
+  symbol='🔌 '
+elif [ "$mode" = "Unknown" ]; then
+  if [ "$ac_adapt" = "on-line," ]; then
+    symbol='⚡ '
+  elif [ "$ac_adapt" = "off-line," ]; then
+    symbol='🔌 '
+  fi
+else
+  symbol='🔋 '
+fi
+
+
+#printf "%s" "$symbol"
+if [ "$mode" = "Discharging" ]; then
+  if [ "$percent" -lt 20 ]; then
+    printf "%%{F#ed0b0b}";
+    printf "%%{u#ed0b0b}";
+  elif [ "$percent" -lt 50 ]; then
+    printf "%%{F#f2e421}";
+    printf "%%{u#f2e421}";
+  else
+    printf "%%{F#77b255}";
+    printf "%%{u#77b255}";
+  fi
+else
+  printf "%%{F#44EB33}"; ##aeff00 ##3CF129
+  printf "%%{u#44EB33}"; ##aeff00 ##3CF129
+fi
+
+
+printf "Ext: "
+
+printf "%s" "$symbol"
+
+printf "$percent%%"
+
+
+#if [ "$mode" = "Discharging," ] || [ "$mode" = "Charging," ] || [ "$ac_adapt" = "off-line," ]; then
+#  echo " ($remaining)"
+#fi
+

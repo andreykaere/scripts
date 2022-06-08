@@ -1,0 +1,205 @@
+v2.0.1
+	Major:
+		Update themes file for rofi 1.7 compatibility
+	Minor:
+		Add themes that follow user's ones
+		New update option : clone => populate user config folder
+		Update readme
+	Other:
+		Add Makefile 
+
+v2.0.0
+	Major:
+		/!\ Break conig files compatibility (rename variable,
+		see xxx to upgrade your files
+		Add Custom event support
+		Add CalDav support (as custom event)
+		Simplified theme conf : remove hardly ever used variable, now hardcoded
+		Move event config in separated file and common to all themes
+
+	Minor:
+	    Improve conf files doc
+	    New color theme : material red
+
+v1.0.0
+
+	Major:
+		Release naivecalendar as first stable
+
+v0.8.1
+
+	Minor:
+		Workaround for "back to current date"
+
+v0.8.0 :
+
+	Major:
+		Allow user to use full pango markup (+1versatility, +1kiss)
+		(~soft breaking)
+	Minor:
+		Allow custom character in ROWs
+		Add themes : pastel blue, slate
+		theme ressources haromonization (standard?)
+		remove useless [SHAPE] section in config (now just count ROWs)
+		Doc adjustements
+		Change default theme to classic dark extended (better example)
+
+v0.7.4 : Opulence
+
+	Major:
+		Theme is also applied to popups and menus
+	Minor:
+		Change datetime : today() to now() : can display hour in header/message
+		Add Mangolia and Carbon Gold themes from ZB652
+		Add shortcut => back to current month
+		Correct code blocks in doc
+		Update completion
+
+v0.7.3 : Quinquennial plan
+
+	Minor:
+		Add "modern" themes
+		Revert log file (correct recursion effect)
+	Bugs:
+		missing return in set_list function
+		typing error when searching for theme existence in user path
+
+v0.7.2 : Socialism
+
+	Minor:
+		Themes now share common ressources
+	Bugs:
+		log was erased at last loop
+		reopen notes with "strftime folder" in show event popup
+		
+v0.7.1 : Faith
+
+	Minor:
+		Capture rofi close error when openning menus
+		Save session cmd parameters after openning menu
+		Events now support strftime format in folder name
+
+	Bugs:
+		Only execute -p and -x action once (not in recursions)		
+		Unwanted blank line in output
+
+v0.7.0 : Again and again and again
+
+	Major:
+		Add config option : update message at each date change
+		Event : tiny format to parse event for menus
+		
+	Minor:
+		New themes : lead pencil and blackboard
+		Update readme : add version number
+		Update doc : add example
+		Keep whitespace defined in config for alignement control
+		Can now set "back to calendar" symbol
+
+v0.6.2 : Improvements
+
+    Minor:
+        Improve Completion
+        Update Readmes
+
+    Bugs:
+        infinite loop with --theme option
+        special symbols issues in regex
+
+v0.6.1 : Scripts & Completion
+
+    Major:
+        add completion
+    Minor:
+        improve scripts
+    Bugs:
+        script now handle special character as space and slash
+
+v0.6.0 : Recursion
+
+    Major:
+        Remove unconsistent mode-switcher
+        Add script to update all theme at once
+        Rewrite menu and shortcut bar construction (prevent unconsitent config)
+    Minor:
+        Add missing optional dependencies
+        Prevent recursive accumulation of rofi calls
+    Bugs:
+        Prevent crash when wrong theme name is given
+
+v0.5.2 : Themes Conflicts
+
+    Major:
+        Now override all theme.rasi files, naivecalendat should appear the same on all configs
+
+v0.5.1 : Help & Readme
+
+    Minor:
+        Better help msg
+        Update Readme
+
+v0.5.0 : Better header and themes
+
+    Major :
+        More configurable header (break old config)
+    Minor :
+        New themes
+
+V0.4.1 : Alignment
+
+    Minor:
+        Align all symbols/character to right
+
+v0.4.0 : Menu & Shortcuts
+
+    Major:
+        Add a new bar that can be used for shortcuts and menu
+        Reformat cfg files : breaking changes
+    Minor:
+        Update and add themes variant
+        Document config files
+    Bugs:
+        augment sleep time before relaunch rofi to prevent "lose focus click"
+        prevent crash when conflict between old cache file and new config
+
+v0.3.5 : Multiple Events
+
+    Major:
+        Add multiple events folder (replace notes)
+        Add a menu button
+        Better symbols support for event files names
+    Minor:
+        Update doc / man / readme
+    Bugs:
+        support name with point for notes (now events)
+
+v0.3.4 : Hello Copy-to-clipboard
+
+    Major:
+        add copy-to-clipboard (-x|--clipboard) option
+        add version message (-v|--version)
+    Minor:
+        docstring, manual and message update
+        more explicit global var assignement
+
+v0.3.3 : Byebye tkinter
+
+    Major:
+        remove tkinter dependancies (rofi popup only)
+    Minor:
+        document undocumented functions
+
+v0.3.2 : The unamed version
+
+    Major :
+        add "open at date" option
+    Minor :
+        correct numpy docstrings
+    Bugs :
+        missing dep in deb
+        non-recursive config folder creation⎋
+
+v0.3.1 : Debpackage
+
+    Major:
+        Create debian package

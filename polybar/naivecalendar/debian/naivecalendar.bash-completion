@@ -1,0 +1,319 @@
+# naivecalendar completion
+
+parameter_options="""
+USER_LOCALE
+PROMT_DATE_FORMAT
+IS_TODAY_HEAD_MSG
+IS_LOOP_TODAY_HEAD_MSG
+TODAY_HEAD_MSG_TXT
+DAY_ABBR_LENGHT
+FIRST_DAY_WEEK
+SYM_NEXT_MONTH
+SYM_NEXT_YEAR
+SYM_PREV_MONTH
+SYM_PREV_YEAR
+NB_ROW
+ROW_WEEK_SYM
+ROW_CAL_START
+ROW_BAR_1
+ROW_BAR_2
+SYMS_BAR_1
+SYMS_BAR_2
+SYM_SHOW_HELP
+SYM_SWITCH_THEME
+SYM_SHOW_EVENTS
+SYM_SWITCH_EVENT
+SYM_SHOW_MENU
+SYM_BACK_TO_CALENDAR
+SYM_GO_TODAY
+"""
+
+submodules_options="-- update-themes add-event configure"
+
+naivecalendar_options="--help --version --verbose --print --clipboard --format --editor --locale --read-cache --theme --date"
+
+update_options="--help --simulate --list-parameters --list-themes --parameter --value --filter --all-parameters --editor"
+update_param_exclude="--help --all-parameters --list-parameters --list-themes --editor"
+update_all_exclude="--list-parameters --list-themes --parameter --value"
+
+add_event_options="--help --new --value --override --delete"
+add_event_delete_exclude="--new --value --override"
+add_event_other_exclude="--delete"
+
+configure_options="--help --clone --edit"
+
+
+theme_list="$(ls /usr/share/naivecalendar/themes | grep .cfg | sed -e 's/\.cfg//g')"
+theme_list_user="$(ls $HOME/.config/naivecalendar/themes | grep .cfg | sed -e 's/\.cfg//g')"
+theme_list="$theme_list $theme_list_user"
+
+locales_list=$(locale -a)
+
+_myscript_tab_complete () {
+    local cur prev prevs opts
+    COMPREPLY=()
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    prev="${COMP_WORDS[COMP_CWORD-1]}"
+    prevs="${COMP_WORDS[@]}"
+
+    strip_prev=${prev##*(-)}
+
+    is_update=false
+    for element in ${prevs[@]}; do
+        if [[ "$element" == "update-themes" ]]; then
+            is_update=true
+        fi
+    done
+
+    is_add_event=false
+    for element in ${prevs[@]}; do
+        if [[ "$element" == "add-event" ]]; then
+            is_add_event=true
+        fi
+    done
+
+    is_configure=false
+    for element in ${prevs[@]}; do
+        if [[ "$element" == "configure" ]]; then
+            is_configure=true
+        fi
+    done
+
+    # show subcommand or calendar command if '--' manually typed
+    if [[ $prev == "naivecalendar" ]] ; then
+
+        if [[ "$cur" =~ "--" ]]; then
+
+            options=$naivecalendar_options
+            for element in ${prevs%%*(-)}; do
+                options=$(echo $options | sed -e 's:'$element'\b *::')
+            done
+
+        else
+            options=$submodules_options
+        fi
+
+    # update subcommands
+    elif [[ "$is_update" == "true" ]] ; then
+
+        prevs=$(echo $prevs | sed -e 's/\bh\b/-help/')
+        prevs=$(echo $prevs | sed -e 's/\bs\b/-simulate/')
+        prevs=$(echo $prevs | sed -e 's/\bL\b/-list-parameters/')
+        prevs=$(echo $prevs | sed -e 's/\bT\b/-list-themes/')
+        prevs=$(echo $prevs | sed -e 's/\bp\b/-parameter/')
+        prevs=$(echo $prevs | sed -e 's/\bv\b/-value/')
+        prevs=$(echo $prevs | sed -e 's/\bf\b/-filter/')
+        prevs=$(echo $prevs | sed -e 's/\ba\b/-all-parameters/')
+        prevs=$(echo $prevs | sed -e 's/\be\b/-editor/')
+
+        # show all
+        if [[ $prev == "update-themes" ]] ; then
+            options=$update_options #_get_update_opt
+
+        # show config parameters avaibles after -p|--parameter option
+        elif [[ "$prev" == "-p" || $prev == "--parameter" ]] ; then
+            options=$parameter_options #_get_update_opt
+
+        elif [[ "$prev" == "-f" || $prev == "--filter" ]] ; then
+            options=$theme_list #'\"\.\*\"' #_get_update_opt
+
+        elif [[ "$prev" == "-v" || $prev == "--value" ]] ; then
+            options='<value>'
+
+        elif [[ "$prev" == "-L" || $prev == "--list-parameters" ]] ; then
+            options=" " 
+
+        elif [[ "$prev" == "-L" || $prev == "--list-themes" ]] ; then
+            options=" " 
+
+        elif [[ "$prev" == "-h" || $prev == "--help" ]] ; then
+            options=" " 
+
+        elif [[ "$prev" == "themes" || $prev == "scripts" || $prev == "events" ]] ; then
+            options=" "
+
+        elif [[ "$prev" == "-e" || $prev == "--editor" ]] ; then
+            options="xdg-open" 
+
+        # show all but remove already listed elements #if already listed
+        else
+            options=$update_options
+
+            # if any other remove help and list-parameters
+            options=$(echo $options | sed -e 's:--help\b *::')
+            options=$(echo $options | sed -e 's:--list-parameters\b *::')
+            options=$(echo $options | sed -e 's:--list-themes\b *::')
+            
+
+            for element in ${prevs%%*(-)}; do
+                # remove previous used element
+                options=$(echo $options | sed -e 's:'$element'\b *::')
+
+                # remove incompatibles paramaters
+                if [[ "$element" == "--parameter" || "$element" == "--value" ]]; then
+                    for exclude in ${update_param_exclude%%*(-)}; do 
+                        options=$(echo $options | sed -e 's:'$exclude'\b *::')
+                    done
+                elif [[ "$element" == "-p" || "$element" == "-v" ]]; then
+                    for exclude in ${update_param_exclude%%*(-)}; do 
+                        options=$(echo $options | sed -e 's:'$exclude'\b *::')
+                    done
+                elif [[ "$element" == "-a" || "$element" == "--all-parameters" ]]; then
+                    for exclude in ${update_all_exclude%%*(-)}; do 
+                        options=$(echo $options | sed -e 's:'$exclude'\b *::')
+                    done
+                fi
+            done
+        fi
+
+    # add-event subcommand
+    elif [[ "$is_add_event" == "true" ]] ; then
+
+        prevs=$(echo $prevs | sed -e 's/\bh\b/-help/')
+        prevs=$(echo $prevs | sed -e 's/\bn\b/-new/')
+        prevs=$(echo $prevs | sed -e 's/\bv\b/-value/')
+        prevs=$(echo $prevs | sed -e 's/\bo\b/-override/')
+        prevs=$(echo $prevs | sed -e 's/\bd\b/-delete/')
+
+        EVENT_FILE="$HOME/.config/naivecalendar/global/events.cfg"
+
+        # show all
+
+        if [[ "$prev" == "add-event" ]] ; then
+            options=$add_event_options #_get_update_opt
+        elif [[ "$prev" == "-v" || $prev == "--value" ]] ; then
+            options="<path/to/event/my-event_%d-%m-%Y>" #_get_update_opt
+
+        elif [[ "$prev" == "-n" || $prev == "--new" ]] ; then
+            options="<event_name>" #_get_update_opt
+
+        elif [[ "$prev" == "-h" || $prev == "--help" ]] ; then
+            options=" " 
+
+        elif [[ "$prev" == "-d" || $prev == "--delete" ]] ; then
+            options=""
+            if ! [ -e "$EVENT_FILE" ]; then
+                options=" "
+            else 
+                event_names=$(cat $EVENT_FILE | sed -e '1,/\[EVENTS\]/d' -e '/^\[/,$d' | grep ^[a-zA-Z] | sed -e 's:=.*$::')
+                options="$options $event_names"
+            fi
+
+        # show all but remove already listed options
+        else
+            options=$add_event_options
+            options=$(echo $options | sed -e 's:--help\b *::')
+            for element in ${prevs%%*(-)}; do
+                # remove already present arguemnts
+                options=$(echo $options | sed -e 's:'$element'\b *::')
+               
+                # remove incompatibles paramaters
+                if [[ "$element" == "-d" || "$element" == "--delete" ]]; then
+                    for exclude in ${add_event_delete_exclude%%*(-)}; do 
+                        options=$(echo $options | sed -e 's:'$exclude'\b *::')
+                    done
+                elif [[ "$element" == "--new" || "$element" == "--value" || "$element" == "--override" ]]; then
+                    for exclude in ${add_event_other_exclude%%*(-)}; do 
+                        options=$(echo $options | sed -e 's:'$exclude'\b *::')
+                    done
+                elif [[ "$element" == "-n" || "$element" == "-v" || "$element" == "-o" ]]; then
+                    for exclude in ${add_event_other_exclude%%*(-)}; do 
+                        options=$(echo $options | sed -e 's:'$exclude'\b *::')
+                    done
+                fi
+            done
+        fi
+
+    # configure subcommand
+    elif [[ "$is_configure" == "true" ]] ; then
+
+        prevs=$(echo $prevs | sed -e 's/\bh\b/-help/')
+        prevs=$(echo $prevs | sed -e 's/\bc\b/-clone/')
+        prevs=$(echo $prevs | sed -e 's/\be\b/-edit/')
+
+        EVENT_FILE="$HOME/.config/naivecalendar/global/events.cfg"
+
+        # show all
+
+        if [[ "$prev" == "configure" ]] ; then
+            options=$configure_options #_get_update_opt
+        elif [[ "$prev" == "-c" || $prev == "--clone" ]] ; then
+            options="EVENTS THEMES SCRIPTS" #_get_update_opt
+
+        elif [[ "$prev" == "-e" || $prev == "--edit" ]] ; then
+            options="EVENTS THEMES SCRIPTS" #_get_update_opt
+
+        elif [[ "$prev" == "-h" || $prev == "--help" ]] ; then
+            options=" "
+
+        # show all but remove already listed options
+        else
+            options=" "
+        fi
+
+    # list naivecalendar main options
+    else
+
+        prevs=$(echo $prevs | sed -e 's/\hx\b/-help/')
+        prevs=$(echo $prevs | sed -e 's/\bV\b/-version/')
+        prevs=$(echo $prevs | sed -e 's/\bp\b/-print/')
+        prevs=$(echo $prevs | sed -e 's/\bx\b/-clipboard/')
+        prevs=$(echo $prevs | sed -e 's/\bf\b/-format/')
+        prevs=$(echo $prevs | sed -e 's/\be\b/-editor/')
+        prevs=$(echo $prevs | sed -e 's/\bl\b/-locale/')
+        prevs=$(echo $prevs | sed -e 's/\bc\b/-read-cache/')
+        prevs=$(echo $prevs | sed -e 's/\bt\b/-theme/')
+        prevs=$(echo $prevs | sed -e 's/\bd\b/-date/')
+        prevs=$(echo $prevs | sed -e 's/\bv\b/-verbose/')
+
+        # show examples when option require a value
+        if [[ "$prev" == "-t" || $prev == "--theme" ]] ; then
+            options=$theme_list #_get_update_opt
+        elif [[ "$prev" == "-f" || $prev == "--format" ]] ; then
+            options="'%Y-%m-%d'" #_get_update_opt
+        elif [[ "$prev" == "-d" || $prev == "--date" ]] ; then
+            options="01-2021" #_get_update_opt
+        elif [[ "$prev" == "-l" || $prev == "--locale" ]] ; then
+            options=$locales_list #_get_update_opt
+        elif [[ "$prev" == "-e" || $prev == "--editor" ]] ; then
+            options="xdg-open" #_get_update_opt
+        elif [[ "$prev" == "-h" || $prev == "--help" ]] ; then
+            options=" " 
+        elif [[ "$prev" == "-V" || $prev == "--version" ]] ; then
+            options=" " 
+
+        # list all but remove already listed options
+        else
+            options=$naivecalendar_options
+            options=$(echo $options | sed -e 's:--version\b *::')
+            options=$(echo $options | sed -e 's:--help\b *::')
+
+            for element in ${prevs%%*(-)}; do
+                options=$(echo $options | sed -e 's:'$element'\b *::')
+                if [[ "$element" == "-d" || "$element" == "--date" ]]; then
+                    options=$(echo $options | sed -e 's:--read-cache\b *::')
+                elif [[ "$element" == "-c" || "$element" == "--read-cache" ]]; then
+                    options=$(echo $options | sed -e 's:--date\b *::')
+                elif [[ "$element" == "-p" || "$element" == "--print" ]]; then
+                    options=$(echo $options | sed -e 's:--editor\b *::')
+                elif [[ "$element" == "-x" || "$element" == "--clipboard" ]]; then
+                    options=$(echo $options | sed -e 's:--editor\b *::')
+                elif [[ "$element" == "-e" || "$element" == "--editor" ]]; then
+                    options=$(echo $options | sed -e 's:--print\b *::')
+                    options=$(echo $options | sed -e 's:--clipboard\b *::')
+                fi
+            done
+        fi
+
+    fi
+
+    COMPREPLY=( $(compgen -W "${options}" -- ${cur}) )
+    return 0
+}
+complete -F _myscript_tab_complete naivecalendar
+
+
+
+
+
+
